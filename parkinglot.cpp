@@ -1,22 +1,26 @@
 #include<bits/stdc++.h>
 using namespace std;
-
+/*The Idea here was to define our parking lot which contains slots where we would park our car*/
+//our car has features like registration no, age of its driver, and the lot alloted to it,which differentiate it from other cars
 class Car{
     private:
         string registrationNumber;
         int driverAge;
         int lotAlloted;
     public:
+        //Non Parametrized constructor
         Car(){
             this->registrationNumber = "NONE";
             this->driverAge = -1;
             this->lotAlloted = -1;
         }
+        //Parametrized constructor
         Car(string registrationNumber,int driverAge,int lotAlloted){
             this->registrationNumber = registrationNumber;
             this->driverAge = driverAge;
             this->lotAlloted = lotAlloted;
         }
+        //getters and stters
         string getCarNo(){
             return registrationNumber;
         }
@@ -44,6 +48,7 @@ class Car{
             return lotAlloted;
         }
 };
+//we have a slot which contaions a car
 class Slot{
         Car c;
         bool isOccupied;
@@ -51,20 +56,21 @@ class Slot{
         Slot(){
             isOccupied = false;
         }
-
+        //occupy the slot
         void occupy(string carno,int age,int slotno){
             c.setRegNo(carno);
             c.setdriverAge(age);
             c.setLotAlloted(slotno);
             isOccupied = true;
         }
-
+        //free the slot
         void unoccupy(){
             isOccupied=false;
             c.setRegNo("");
             c.setdriverAge(-1);
             c.setLotAlloted(-1);
         }
+        //getters
         string getCarParkedNo(){
             return c.getCarNo();
         }
@@ -72,25 +78,36 @@ class Slot{
             return c.getdriverAge();
         }
 };
+//multiple slots would make up our parking lot
 class parking_lot{
 
     private:
+        //continious n slots where wecan park our cars.
         vector<Slot> slots;
+        //min priority queue which stores the smallest availabe free space on top
         priority_queue<int,vector<int>,greater<int> >  freeslot;
-
-
-        unordered_map<int,unordered_set<int>> carForAge;
+        //maps the age of the driver to the cars driven by the same aged driver 
+        unordered_map<int,set<int>> carForAge;
+        //maps the registration of the car to the slot at which it is parked
         unordered_map<string,int> slotOfcarRegNo;
 
     public:
+        //parametrized constructor
         parking_lot(int n){
             slots.resize(n+1);
             for(int i=1;i<=n;i++){
                 freeslot.push(i);
             }
         }
+        //function to park the car
         void park(string carno, int age){
-            // cout<<carno<<' '<<age<<'\n';
+            //condition if the parking is full
+            if(!freeslot.size()){
+                cout<<"We are sorry, our parking is full at the moment.\n";
+                return;
+            }
+            /*if the parking is not full, we occupy the min available slot and 
+            add this slot to the group of slots owned by the drivers of the same age*/
             int slotno=freeslot.top();
             freeslot.pop();
             carForAge[age].insert(slotno);
@@ -98,8 +115,8 @@ class parking_lot{
             slotOfcarRegNo[carno] = slotno;
             cout<<"Car with vehicle registration number "<<carno<<" has been parked at slot number "<<slotno<<'\n';
         }
+        //funtion to remove the car from the parking lot
         void leave(int slotno){
-            // cout<<slotno<<'\n';
             string carToLeaveRegNo = slots[slotno].getCarParkedNo();
             slotOfcarRegNo.erase(carToLeaveRegNo);
             int ageOfCarAtSlot = slots[slotno].getCarAge();
@@ -107,21 +124,19 @@ class parking_lot{
             slots[slotno].unoccupy();
             freeslot.push(slotno);
             cout<<"Slot number "<<slotno<<" vacated, the car with vehicle registration number "<<carToLeaveRegNo<<
-            "left the space, the driver of the car was of age "<<ageOfCarAtSlot<<'\n';
+            " left the space, the driver of the car was of age "<<ageOfCarAtSlot<<'\n';
         }
+        //getter functions
         void getSlotNumbersFromAge(int x){
-            // cout<<x<<'\n';
             for(auto it:carForAge[x]){
                 cout<<it<<',';
             }
             cout<<'\n';
         }
         void getSlotNumberFromRegNo(string carno){
-            // cout<<carno<<'\n';
             cout<<slotOfcarRegNo[carno]<<'\n';
         }
         void getRegistrationNumbersFromAge(int age){
-            // cout<<age<<'\n';
             for(auto it=carForAge[age].begin();it!=carForAge[age].end();it++){
                 cout<<slots[*it].getCarParkedNo()<<',';
             }
@@ -132,7 +147,9 @@ class parking_lot{
 int main(){
     freopen("input.txt","r",stdin);
     string job;
+    //declaring our parking lot dynamically
     parking_lot *parkingLot;
+
     while(cin>>job){
         if(job=="Create_parking_lot"){
             int lotcount;
@@ -168,6 +185,7 @@ int main(){
             parkingLot->getRegistrationNumbersFromAge(age);
         }
     }
+    delete parkingLot;
+
     return 0;
-    
 }
